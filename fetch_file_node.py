@@ -59,6 +59,11 @@ class FetchFileNode:
                     "default": "output/file.txt"
                 }),
             },
+            "optional": {
+                "overwrite_local_file_if_exists": ("BOOL", {
+                    "default": False
+                }),
+            },
         }
 
     RETURN_TYPES = ("STRING",)
@@ -70,7 +75,7 @@ class FetchFileNode:
 
     CATEGORY = "File Operations"
 
-    def execute(self, url, output_path):
+    def execute(self, url, output_path, overwrite_local_file_if_exists=False):
         try:
              # Get the absolute path of the script's directory
             script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -80,13 +85,13 @@ class FetchFileNode:
             # go up 2 directories
             os.chdir(os.path.join(os.getcwd(), "../../")) # now we are in the root directory
 
+            final_output_path = os.path.join(os.getcwd(), output_path)
+
+            if os.path.exists(final_output_path) and not overwrite_local_file_if_exists:
+                return ("File already exists")
 
             # print that you are fetching the url
-            print(f"Fetching file from {url} and saving to {output_path}")
-            # print the current path
-            print(f"Current path: {os.getcwd()}")
-
-
+            print(f"Fetching file from {url} and saving to {final_output_path}")
 
             response = requests.get(url)
             response.raise_for_status()
@@ -96,61 +101,6 @@ class FetchFileNode:
         except Exception as e:
             return (f"Error: {e}",)
 
-
-class PrintStatusNode:
-    """
-    A node that prints out the download status.
-
-    Class methods
-    -------------
-    INPUT_TYPES (dict): 
-        Tell the main program input parameters of nodes.
-    IS_CHANGED:
-        optional method to control when the node is re executed.
-
-    Attributes
-    ----------
-    RETURN_TYPES (`tuple`): 
-        The type of each element in the output tuple.
-    RETURN_NAMES (`tuple`):
-        Optional: The name of each output in the output tuple.
-    FUNCTION (`str`):
-        The name of the entry-point method. For example, if `FUNCTION = "execute"` then it will run PrintStatusNode().execute()
-    OUTPUT_NODE ([`bool`]):
-        If this node is an output node that outputs a result/image from the graph. The SaveImage node is an example.
-        Assumed to be False if not present.
-    CATEGORY (`str`):
-        The category the node should appear in the UI.
-    execute(s) -> tuple || None:
-        The entry point method. The name of this method must be the same as the value of property `FUNCTION`.
-        For example, if `FUNCTION = "execute"` then this method's name must be `execute`, if `FUNCTION = "foo"` then it must be `foo`.
-    """
-    def __init__(self):
-        pass
-
-    @classmethod
-    def INPUT_TYPES(s):
-        return {
-            "required": {
-                "status": ("STRING", {
-                    "multiline": False,
-                    "default": "No status available"
-                }),
-            },
-        }
-
-    RETURN_TYPES = ()
-    RETURN_NAMES = ()
-
-    FUNCTION = "execute"
-
-    OUTPUT_NODE = True
-
-    CATEGORY = "Utility"
-
-    def execute(self, status):
-        print(status)
-        return ()
 
 # Set the web directory, any .js file in that directory will be loaded by the frontend as a frontend extension
 # WEB_DIRECTORY = "./somejs"
@@ -167,7 +117,6 @@ async def get_hello(request):
 # NOTE: names should be globally unique
 NODE_CLASS_MAPPINGS = {
     "FetchFileNode": FetchFileNode,
-    "PrintStatusNode": PrintStatusNode,
 }
 
 # A dictionary that contains the friendly/humanly readable titles for the nodes
