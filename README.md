@@ -1,5 +1,10 @@
 Creates a fetch file node in comfy:
 
+## Installation:
+- open comfy-ui manager
+- install from github: https://github.com/ultrafro/comfy_fetch_file_node
+
+## Usage:
 - you put in a url to download from (e.g. Google cloud storage)
 - you put in the output file's name
 
